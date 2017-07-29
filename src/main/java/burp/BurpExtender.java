@@ -45,6 +45,11 @@ public class BurpExtender implements IBurpExtender, IHttpListener
         byte[] data = msgInfo.getRequest();
         IRequestInfo reqInfo = mHelper.analyzeRequest(service, data);
 
+        String url = reqInfo.getUrl().toString();
+        if(!url.toLowerCase().contains("facebook")){
+            return;
+        }
+
         CommonLog.logd("");
         CommonLog.logd("REQ >>>");
         CommonLog.logd(reqInfo.getUrl().toString());
@@ -76,6 +81,12 @@ public class BurpExtender implements IBurpExtender, IHttpListener
 
     void processResponse(IHttpRequestResponse msgInfo){
         IHttpService service = msgInfo.getHttpService();
+
+        String host = service.getHost();
+        if(host != null && !host.toLowerCase().contains("facebook")){
+            return;
+        }
+
         byte[] data = msgInfo.getResponse();
         IResponseInfo resInfo = mHelper.analyzeResponse(data);
         CommonLog.logd("");
