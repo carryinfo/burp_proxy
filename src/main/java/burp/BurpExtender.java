@@ -3,18 +3,21 @@
 * */
 package burp;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+import static burp.IInterceptedProxyMessage.ACTION_DONT_INTERCEPT;
+import static burp.IInterceptedProxyMessage.ACTION_DO_INTERCEPT;
 
-public class BurpExtender implements IBurpExtender, IHttpListener
+
+public class BurpExtender implements IBurpExtender, IHttpListener, IProxyListener
 {
 
     private IExtensionHelpers mHelper;
+
+    private boolean mLogging = false;
 
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
@@ -25,7 +28,8 @@ public class BurpExtender implements IBurpExtender, IHttpListener
 
         mHelper = callbacks.getHelpers();
 
-        callbacks.registerHttpListener(this);
+//        callbacks.registerHttpListener(this);
+        callbacks.registerProxyListener(this);
 
     }
 
@@ -39,44 +43,63 @@ public class BurpExtender implements IBurpExtender, IHttpListener
             }
         }
     }
+//
+//    private void replaceHWInfo(byte[] data, IRequestInfo reqInfo){
+//        List<String> headers = reqInfo.getHeaders();
+//
+//        URL url = reqInfo.getUrl();
+//        String s = url.toString();
+//
+//        for(String header: headers){
+//            if(header.contains("abc")){
+//                CommonLog.logd("abc;;;;; ");
+//
+//               header =  header.replace("abc", "def");
+//            }
+//            CommonLog.logd(header);
+//        }
+//
+//        int offset = reqInfo.getBodyOffset();
+//        byte[] body = arrayCopy(data, offset);
+//
+//    }
 
     void processRequest(IHttpRequestResponse msgInfo){
         IHttpService service = msgInfo.getHttpService();
         byte[] data = msgInfo.getRequest();
         IRequestInfo reqInfo = mHelper.analyzeRequest(service, data);
 
-        String url = reqInfo.getUrl().toString();
-        if(!url.toLowerCase().contains("facebook")){
-            return;
-        }
+        if(mLogging){
+            CommonLog.logd("");
+            CommonLog.logd("REQ >>>");
+            CommonLog.logd(reqInfo.getUrl().toString());
+            CommonLog.logd(Utils.getCurrentTime());
+            CommonLog.logd("");
+            List<String> headers = reqInfo.getHeaders();
+            for(String header: headers){
+                CommonLog.logd(header);
+            }
 
-        CommonLog.logd("");
-        CommonLog.logd("REQ >>>");
-        CommonLog.logd(reqInfo.getUrl().toString());
-        CommonLog.logd(Utils.getCurrentTime());
-        CommonLog.logd("");
-        List<String> headers = reqInfo.getHeaders();
-        for(String header: headers){
-            CommonLog.logd(header);
-        }
+            CommonLog.logd("");
 
-        CommonLog.logd("");
-
-        int offset = reqInfo.getBodyOffset();
+            int offset = reqInfo.getBodyOffset();
 //        CommonLog.logd("offset: " + offset);
-        byte[] body = arrayCopy(data, offset);
+            byte[] body = arrayCopy(data, offset);
 
 //        CommonLog.logd(Utils.byteArrayToHexStr(body));
 
 
-        if(body.length >= 2 && body[0] == (byte)0x1f && body[1] == (byte)0x8b){
+            if(body.length >= 2 && body[0] == (byte)0x1f && body[1] == (byte)0x8b){
 //            CommonLog.logd("gzip");
-            String out = gzipDecompress(body);
-            CommonLog.logd(URLDecoder.decode(out));
-        }else{
-            CommonLog.logd(URLDecoder.decode(new String(body)));
+                String out = gzipDecompress(body);
+                CommonLog.logd(URLDecoder.decode(out));
+            }else{
+                CommonLog.logd(URLDecoder.decode(new String(body)));
+            }
+            CommonLog.logd("");
         }
-        CommonLog.logd("");
+
+
     }
 
     void processResponse(IHttpRequestResponse msgInfo){
@@ -89,27 +112,29 @@ public class BurpExtender implements IBurpExtender, IHttpListener
 
         byte[] data = msgInfo.getResponse();
         IResponseInfo resInfo = mHelper.analyzeResponse(data);
-        CommonLog.logd("");
-        CommonLog.logd("RES <<<");
-        CommonLog.logd(Utils.getCurrentTime());
-        CommonLog.logd("");
-        List<String> headers = resInfo.getHeaders();
-        for(String header: headers){
-            CommonLog.logd(header);
+        if(mLogging){
+            CommonLog.logd("");
+            CommonLog.logd("RES <<<");
+            CommonLog.logd(Utils.getCurrentTime());
+            CommonLog.logd("");
+            List<String> headers = resInfo.getHeaders();
+            for(String header: headers){
+                CommonLog.logd(header);
+            }
+
+            CommonLog.logd("");
+
+            int offset = resInfo.getBodyOffset();
+            byte[] body = arrayCopy(data, offset);
+
+            if(body.length >= 2 && body[0] == (byte)0x1f && body[1] == (byte)0x8b){
+                String out = gzipDecompress(body);
+                CommonLog.logd(URLDecoder.decode(out));
+            }else{
+                CommonLog.logd(URLDecoder.decode(new String(body)));
+            }
+            CommonLog.logd("");
         }
-
-        CommonLog.logd("");
-
-        int offset = resInfo.getBodyOffset();
-        byte[] body = arrayCopy(data, offset);
-
-        if(body.length >= 2 && body[0] == (byte)0x1f && body[1] == (byte)0x8b){
-            String out = gzipDecompress(body);
-            CommonLog.logd(URLDecoder.decode(out));
-        }else{
-            CommonLog.logd(URLDecoder.decode(new String(body)));
-        }
-        CommonLog.logd("");
     }
 
     private byte[] arrayCopy(byte[] data, int offset){
@@ -145,4 +170,42 @@ public class BurpExtender implements IBurpExtender, IHttpListener
 
     private static byte[] buffer = new byte[1024 * 1024];
 
+    private IHttpRequestResponse replaceHWInfo(IHttpRequestResponse messageInfo) {
+        String message = new String(messageInfo.getRequest());
+        String search = "abc";
+        String replace = "def";
+        StringBuilder newString = new StringBuilder(message.length() - search.length() + replace.length());
+        try {
+            BufferedReader reader = new BufferedReader(new StringReader(message));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                if (line != null) {
+                    if (line.contains(search)) {
+                        line = line.replaceAll(search, replace);
+                    }
+                    newString.append(line).append("\r\n");
+                }
+            }
+        } catch (Exception e) {
+        }
+
+        messageInfo.setRequest(newString.toString().getBytes());
+        return messageInfo;
+    }
+
+
+    @Override
+    public void processProxyMessage(boolean messageIsRequest, IInterceptedProxyMessage message) {
+        if(messageIsRequest){
+            if(message.getInterceptAction() != ACTION_DO_INTERCEPT){
+                message.setInterceptAction(ACTION_DO_INTERCEPT);
+            }
+
+            IHttpRequestResponse msgInfo = message.getMessageInfo();
+
+            msgInfo = replaceHWInfo(msgInfo);
+            message.setInterceptAction(ACTION_DONT_INTERCEPT);
+        }
+    }
 }
