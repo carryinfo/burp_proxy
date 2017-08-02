@@ -198,17 +198,20 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IProxyListene
 
         Utils.removeMapPair(keyvalue, "sig");
 
-        Utils.replaceMapValue(keyvalue, "email", "lifengeng@163.com");
-        Utils.replaceMapValue(keyvalue, "password", "dahiad");
-        Utils.replaceMapValue(keyvalue, "device_id", "ae11efe2-5a03-4a97-9a5d-68b54fbc61fb");
-        Utils.replaceMapValue(keyvalue, "reg_instance", "ae11efe2-5a03-4a97-9a5d-68b54fbc61fb");
-        Utils.replaceMapValue(keyvalue, "family_device_id", "ae11efe2-5a03-4a97-9a5d-68b54fbc61fb");
-        Utils.replaceMapValue(keyvalue, "firstname", "li");
-        Utils.replaceMapValue(keyvalue, "lastname", "fengeng");
-//        Utils.replaceMapValue(keyvalue, "adid", "4f4ae35e2f432b63");
-//        Utils.replaceMapValue(keyvalue, "generate_session_cookies", "false");
+        Utils.replaceMapValue(keyvalue, "email", "zhaxiaoqiang@qq.com");
+        Utils.replaceMapValue(keyvalue, "password", "dfghjk");
+        Utils.replaceMapValue(keyvalue, "device_id", "ae11e3a1-ca07-3654-8d9a-67b54fbc61fb");
+        Utils.replaceMapValue(keyvalue, "reg_instance", "ae11e3a1-ca07-3654-8d9a-67b54fbc61fb");
+        Utils.replaceMapValue(keyvalue, "family_device_id", "ae11e3a1-ca07-3654-8d9a-67b54fbc61fb");
+        Utils.replaceMapValue(keyvalue, "firstname", "zha");
+        Utils.replaceMapValue(keyvalue, "lastname", "xiaoqiang");
+        Utils.replaceMapValue(keyvalue, "advertising_id", "a662055937895aba");
+        Utils.replaceMapValue(keyvalue, "adid", "a662055937895aba");
+        Utils.replaceMapValue(keyvalue, "generate_session_cookies", "false");
+        Utils.replaceMapValue(keyvalue, "generate_machine_id", "false");
 //        Utils.removeMapPair(keyvalue, "advertising_id");
 //        Utils.removeMapPair(keyvalue, "generate_machine_id");
+//        Utils.removeMapPair(keyvalue, "machine_id");
 //        Utils.removeMapPair(keyvalue, "adid");
 //        CommonLog.logd("getSignature input: " + keyvalue.toString());
         String sig = getSignature(keyvalue);
@@ -217,7 +220,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IProxyListene
             keyvalue.put("sig", sig);
         }
 
-        Utils.replaceMapValue(keyvalue, "email", "lifengeng%40163.com");
+        Utils.replaceMapValue(keyvalue, "email", "zhaxiaoqiang%40qq.com");
 
         for(Map.Entry<String, String> item: keyvalue.entrySet()){
             res = res + item.getKey() + "=" + item.getValue() + "&";
