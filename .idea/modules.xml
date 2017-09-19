@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/burp_proxy.iml" filepath="$PROJECT_DIR$/.idea/modules/burp_proxy.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/burp_proxy_main.iml" filepath="$PROJECT_DIR$/.idea/modules/burp_proxy_main.iml" group="burp_proxy" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/burp_proxy_test.iml" filepath="$PROJECT_DIR$/.idea/modules/burp_proxy_test.iml" group="burp_proxy" />
+      <module fileurl="file://$PROJECT_DIR$/src/main/main.iml" filepath="$PROJECT_DIR$/src/main/main.iml" />
     </modules>
   </component>
 </project>
